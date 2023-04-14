@@ -31,3 +31,31 @@ public class UserModule : SlickRepo<Models.User, Dtos.User>
 
 You would then use ``UserModule`` in a controller
 
+```
+[Route("api")]
+[ApiController]
+public class UserController : Controller
+{
+  
+    private UserModule Module { get; set; }
+    
+    public UserController(UserModule module)
+    {
+        Module = module;
+    }
+
+    [HttpGet]
+    [Route("Users")]
+    public async Task<IActionResult> GetAll()
+    {
+        return Ok(await Module.GetAll());
+    }
+}
+```
+
+That simple. Of course, you need to register ``UserModule`` as an injectable dependency
+
+```
+builder.Services.AddScoped<UserModule>();
+```
+
