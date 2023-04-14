@@ -1,15 +1,29 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  
 
   <ItemGroup>
     <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="6.1.4" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="6.0.15" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
+
+	<PropertyGroup>
+		<PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageProjectUrl>https://github.com/yonderTech/SlickRepo</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/yonderTech/SlickRepo</RepositoryUrl>
+		<Version>1.0.0</Version>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<None Include="LICENSE.txt" Pack="true" PackagePath="" />
+		<None Include="..\README.md" Pack="true" PackagePath="" />
+	</ItemGroup>
 
 </Project>
