@@ -7,6 +7,13 @@ for add and update operations and returns the resulting object as DTO back to th
 
 Here's how to set it up for your project.
 
-```
+In your Startup.cs or Program.cs
 
+```
+builder.Services.ConfigureSlickRepo(o =>
+{
+    o.DbIdProperty = "Id";
+    o.DtoIdProperty = "Id";
+
+});
 ```
