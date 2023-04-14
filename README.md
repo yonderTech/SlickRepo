@@ -12,8 +12,7 @@ In your Startup.cs or Program.cs
 ```
 builder.Services.ConfigureSlickRepo(o =>
 {
-    o.DbIdProperty = "Id";
-    o.DtoIdProperty = "Id";
-
+    o.DbIdProperty = "Id"; //The unique key property of your database objects.
+    o.DtoIdProperty = "Id"; //The unique key on your DTO objects (might get rid of this as it will probably be the same on both ends in most cases)
 });
 ```
