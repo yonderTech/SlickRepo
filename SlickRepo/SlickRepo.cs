@@ -15,13 +15,13 @@ namespace SlickRepo
     /// <typeparam name="TDto">Dto model type</typeparam>
     public class SlickRepo<TDBModel, TDto> where TDBModel : class where TDto : class
     {
-        public SlickRepoConfig Config { get; set; }
         public DbContext Context { get; set; }
+        private string DbIdPropertyName { get; set; }
 
-        public SlickRepo(DbContext context, SlickRepoConfig config)
+        public SlickRepo(DbContext context, string dbIdPropertyName)
         {
             Context = context;
-            Config = config;
+            DbIdPropertyName = dbIdPropertyName;
         }
 
         /// <summary>
@@ -113,7 +113,7 @@ namespace SlickRepo
         {
             try
             {
-                var dtoId = dto.GetType().GetProperty(Config.DtoIdProperty).GetValue(dto);
+                var dtoId = dto.GetType().GetProperty(DbIdPropertyName).GetValue(dto);
                 var target = await DbSet.SingleOrDefaultAsync(DbModelIdLamba(dtoId).DefaultExpression);
                 ApplyProperties(dto, target);
                 await Context.SaveChangesAsync();
@@ -252,7 +252,7 @@ namespace SlickRepo
         private ExpressionStarter<TDBModel> DbModelIdLamba(object id)
         {
             ParameterExpression x = Expression.Parameter(typeof(TDBModel), "x");
-            MemberExpression body = Expression.PropertyOrField(x, Config.DbIdProperty);
+            MemberExpression body = Expression.PropertyOrField(x, DbIdPropertyName);
             ExpressionStarter<TDBModel> p = PredicateBuilder.New<TDBModel>(true);
             p.Start(x => body == id);
             return p;

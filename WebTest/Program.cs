@@ -16,12 +16,6 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<WebTestContext>(ServiceLifetime.Scoped);
 
-builder.Services.ConfigureSlickRepo(o =>
-{
-    o.DbIdProperty = "Id";
-    o.DtoIdProperty = "Id";
-
-});
 
 builder.Services.AddScoped<UserModule>();
 

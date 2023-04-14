@@ -6,7 +6,7 @@ namespace WebTest.Module
 {
     public class UserModule : SlickRepo<Models.User, Dtos.User>
     {
-        public UserModule(WebTestContext ctx, SlickRepoConfig config) : base(ctx, config)
+        public UserModule(WebTestContext ctx) : base(ctx, "Id")
         {
 
         }
