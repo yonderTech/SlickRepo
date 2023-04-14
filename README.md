@@ -7,22 +7,13 @@ for add and update operations and returns the resulting object as DTO back to th
 
 Here's how to set it up for your project.
 
-In your Startup.cs or Program.cs
-
-```
-builder.Services.ConfigureSlickRepo(o =>
-{
-    o.DbIdProperty = "Id"; //The unique key property of your database objects.
-    o.DtoIdProperty = "Id"; //The unique key on your DTO objects (might get rid of this as it will probably be the same on both ends in most cases)
-});
-```
-
 In your web application, you can create a class that inherits SlickRepo as such.
 
 ```
 public class UserModule : SlickRepo<Models.User, Dtos.User>
 {
-    public UserModule(YourDatabaseContext ctx, SlickRepoConfig config) : base(ctx, config)
+    //Id here is the name of the unique key for Models.User
+    public UserModule(YourDatabaseContext ctx, "Id") : base(ctx, config)
     {
 
     }
