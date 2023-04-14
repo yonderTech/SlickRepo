@@ -1,6 +1,6 @@
 # SlickRepo
 
-SlickRepo allows for quick setup of CRUD operations on an Entity Framework (Core) DbSet's.
+SlickRepo allows for quick setup of CRUD operations on an Entity Framework (Core) context DbSet's.
 
 Depending on specified generic parameters, SlickRepo will do its magic on the correct DbSet. It does the boring job of converting from a DTO to your database model 
 for add and update operations and returns the resulting object as DTO back to the upper layer.
