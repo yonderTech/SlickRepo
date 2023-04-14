@@ -16,3 +16,18 @@ builder.Services.ConfigureSlickRepo(o =>
     o.DtoIdProperty = "Id"; //The unique key on your DTO objects (might get rid of this as it will probably be the same on both ends in most cases)
 });
 ```
+
+In your web application, you can create a class that inherits SlickRepo as such.
+
+```
+public class UserModule : SlickRepo<Models.User, Dtos.User>
+{
+    public UserModule(YourDatabaseContext ctx, SlickRepoConfig config) : base(ctx, config)
+    {
+
+    }
+}
+```
+
+You would then use ``UserModule`` in a controller
+
