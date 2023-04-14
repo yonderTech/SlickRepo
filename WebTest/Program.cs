@@ -16,10 +16,11 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<WebTestContext>(ServiceLifetime.Scoped);
 
-builder.Services.AddDynaRepo<Model.BaseModelGuid, Dto.BaseDtoGuid>(o =>
+builder.Services.AddSlickRepo<Model.IBaseModelGuid<Model.BaseModelGuid>, Dto.IBaseDtoGuid<Dto.BaseDtoGuid>>(o =>
 {
-    o.DbIdProperty = x => x.Id;
-    o.DtoIdProperty = x => x.Id;
+    o.DbIdProperty = "Id";
+    o.DtoIdProperty = "Id";
+
 }, ServiceLifetime.Scoped);
 
 builder.Services.AddScoped<UserModule>();
@@ -28,7 +29,7 @@ builder.Services.AddScoped<UserModule>();
 builder.Services.AddSwaggerGen(c =>
 {
     c.CustomSchemaIds(type => type.ToString());
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "WebTest", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "SlickRepo WebTest", Version = "v1" });
 });
 
 

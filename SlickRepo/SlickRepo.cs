@@ -2,6 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System;
 using System.Linq.Expressions;
 using System.Reflection;
 
@@ -14,10 +15,10 @@ namespace SlickRepo
     /// <typeparam name="TDto">Dto model type</typeparam>
     public class SlickRepo<TModel, TDto> where TModel : class where TDto : class
     {
-        public SlickRepoConfig<TModel, TDto> Config { get; set; }
+        public SlickRepoConfig Config { get; set; }
         public DbContext Context { get; set; }
 
-        public SlickRepo(DbContext context, SlickRepoConfig<TModel, TDto> config)
+        public SlickRepo(DbContext context, SlickRepoConfig config)
         {
             Context = context;
             Config = config;
@@ -58,8 +59,8 @@ namespace SlickRepo
         /// <param name="id"></param>
         /// <returns></returns>
         public async Task<TDto?> GetById(object id)
-        {
-            var exists = await DbSet.SingleOrDefaultAsync(x => Config.DbIdProperty.Invoke(x) == id);
+        {   
+            var exists = await DbSet.SingleOrDefaultAsync(DbModelIdLamba(id).DefaultExpression);
 
             var errorMsg = $"{ModuleName}.GetById({id}): record not found";
 
@@ -112,7 +113,8 @@ namespace SlickRepo
         {
             try
             {
-                var target = await DbSet.SingleOrDefaultAsync(x => Config.DbIdProperty.Invoke(x) == Config.DtoIdProperty.Invoke(dto));
+                var dtoId = dto.GetType().GetProperty(Config.DtoIdProperty).GetValue(dto);
+                var target = await DbSet.SingleOrDefaultAsync(DbModelIdLamba(dtoId).DefaultExpression);
                 ApplyProperties(dto, target);
                 await Context.SaveChangesAsync();
                 return ConvertToDto(target);
@@ -133,7 +135,7 @@ namespace SlickRepo
         /// <returns></returns>
         public async Task Delete(object id)
         {
-            var dbModel = await DbSet.SingleOrDefaultAsync(m => Config.DbIdProperty.Invoke(m) == id);
+            var dbModel = await DbSet.SingleOrDefaultAsync(DbModelIdLamba(id).DefaultExpression);
             if (dbModel != null)
             {
                 DbSet.Remove(dbModel);
@@ -222,7 +224,11 @@ namespace SlickRepo
                 return default(T);
         }
 
-
+        /// <summary>
+        /// Apply properties from an object to another
+        /// </summary>
+        /// <param name="source"></param>
+        /// <param name="target"></param>
         private void ApplyProperties(object source, object target)
         {
             List<PropertyInfo> targetProperties = target.GetType().GetProperties().ToList();
@@ -236,6 +242,20 @@ namespace SlickRepo
                     targetProperty.SetValue(target, sourceProperty.GetValue(source));
 
             }
+        }
+
+        /// <summary>
+        /// Create a lambda for look up of record by id
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        private ExpressionStarter<TModel> DbModelIdLamba(object id)
+        {
+            ParameterExpression x = Expression.Parameter(typeof(TModel), "x");
+            MemberExpression body = Expression.PropertyOrField(x, Config.DbIdProperty);
+            ExpressionStarter<TModel> p = PredicateBuilder.New<TModel>(true);
+            p.Start(x => body == id);
+            return p;
         }
 
     }

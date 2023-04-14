@@ -1,10 +1,15 @@
 ﻿namespace WebTest.Dtos
 {
+
+    public interface IBaseDtoGuid<out T>
+    {
+        Guid Id { get; set; }
+    }
     public class BaseDtoGuid
     {
         public BaseDtoGuid()
         {
-            
+
         }
         public Guid Id { get; set; }
     }
@@ -13,7 +18,7 @@
     {
         public BaseDtoInt()
         {
-            
+
         }
         public int Id { get; set; }
 

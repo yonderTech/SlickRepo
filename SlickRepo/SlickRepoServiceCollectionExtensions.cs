@@ -12,20 +12,20 @@ using System.Threading.Tasks;
 
 namespace SlickRepo
 {
-    public class SlickRepoConfig<TDbModel, TDtoModel> where TDbModel: class where TDtoModel: class
+    public class SlickRepoConfig
     {
-        public Expression<Func<TDbModel, object>>? DbIdProperty { get; set; }
-        public Expression<Func<TDtoModel, object>>? DtoIdProperty { get; set; }
+        public string DbIdProperty { get; set; }
+        public string DtoIdProperty { get; set; }
     }
 
     public static class SlickRepoServiceCollectionExtensions
     {
-        public static IServiceCollection AddDynaRepo<TDbModel, TDtoModel>(this IServiceCollection services,
-            Action<SlickRepoConfig<TDbModel, TDtoModel>> setupAction, ServiceLifetime serviceLifetime) where TDbModel : class 
+        public static IServiceCollection AddSlickRepo<TDbModel, TDtoModel>(this IServiceCollection services,
+            Action<SlickRepoConfig> setupAction, ServiceLifetime serviceLifetime) where TDbModel : class 
             where TDtoModel : class
         {
 
-            SlickRepoConfig<TDbModel, TDtoModel> config = new SlickRepoConfig<TDbModel, TDtoModel>();
+            SlickRepoConfig config = new SlickRepoConfig();
             setupAction.Invoke(config);
             services.AddSingleton(config);
             
@@ -35,21 +35,21 @@ namespace SlickRepo
                     services.AddSingleton(CreateBaseRepo<TDbModel, TDtoModel>(services, config));
                     break;
                 case ServiceLifetime.Transient:
-                    services.AddTransient((Func<IServiceProvider, SlickRepo.SlickRepo<TDbModel, TDtoModel>>)(sp =>
+                    services.AddTransient(sp =>
                     {
-                        var config = sp.GetService<SlickRepoConfig<TDbModel, TDtoModel>>();
+                        var config = sp.GetService<SlickRepoConfig>();
                         var ctx = sp.GetService<DbContext>();
-                        return (SlickRepo.SlickRepo<TDbModel,TDtoModel>)new SlickRepo<TDbModel, TDtoModel>(ctx, config);
-                    }));
+                        return new SlickRepo<TDbModel, TDtoModel>(ctx, config);
+                    });
                     break;
                 case ServiceLifetime.Scoped:
-                    services.AddScoped((Func<IServiceProvider, SlickRepo.SlickRepo<TDbModel, TDtoModel>>)(sp =>
+                    services.AddScoped(sp =>
                     {
                         Debugger.Break();
-                        var config = sp.GetService<SlickRepoConfig<TDbModel, TDtoModel>>();
+                        var config = sp.GetService<SlickRepoConfig>();
                         var ctx = sp.GetService<DbContext>();
-                        return (SlickRepo.SlickRepo<TDbModel,TDtoModel>)new SlickRepo<TDbModel, TDtoModel>(ctx, config);
-                    }));
+                        return new SlickRepo<TDbModel, TDtoModel>(ctx, config);
+                    });
                     break;
             }
 
@@ -57,7 +57,7 @@ namespace SlickRepo
         }
 
 
-        private static SlickRepo<TDbModel, TDtoModel> CreateBaseRepo<TDbModel, TDtoModel>(IServiceCollection services, SlickRepoConfig<TDbModel, TDtoModel> config) where TDbModel : class 
+        private static SlickRepo<TDbModel, TDtoModel> CreateBaseRepo<TDbModel, TDtoModel>(IServiceCollection services, SlickRepoConfig config) where TDbModel : class 
             where TDtoModel : class
         {
             var serviceProvider = services.BuildServiceProvider();

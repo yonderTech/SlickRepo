@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DynaRepo\SlickRepo.csproj" />
+    <ProjectReference Include="..\SlickRepo\SlickRepo.csproj" />
   </ItemGroup>
 
 </Project>

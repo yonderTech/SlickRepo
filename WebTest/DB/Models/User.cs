@@ -1,6 +1,6 @@
 ﻿namespace WebTest.DB.Models
 {
-    public class User : BaseModelGuid
+    public class User : BaseModelGuid, IBaseModelGuid<User>
     {
         public string Email { get; set; }
     }
