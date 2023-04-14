@@ -6,11 +6,11 @@ using System.Reflection;
 namespace SlickRepo
 {
     /// <summary>
-    /// BaseModule, provides base operations for CRUD operations and converting back and forth
+    /// SlickRepo. Provides base operations for CRUD operations and converting back and forth to database and upper layer(s)
     /// </summary>
     /// <typeparam name="TDBModel">DB model type</typeparam>
     /// <typeparam name="TDto">Dto model type</typeparam>
-    public class SlickRepo<TDBModel, TDto> where TDBModel : class where TDto : class
+    public abstract class SlickRepo<TDBModel, TDto> where TDBModel : class where TDto : class
     {
         public DbContext Context { get; set; }
         private string DbIdPropertyName { get; set; }
@@ -26,7 +26,7 @@ namespace SlickRepo
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        public async Task<List<TDto>> Where(Expression<Func<TDBModel, bool>> predicate)
+        public virtual async Task<List<TDto>> Where(Expression<Func<TDBModel, bool>> predicate)
         {
             var data = await DbSet.Where(predicate).ToListAsync();
             return ConvertToDto(data);
@@ -37,7 +37,7 @@ namespace SlickRepo
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        public async Task<TDto?> Get(Expression<Func<TDBModel, bool>> predicate)
+        public virtual async Task<TDto?> Get(Expression<Func<TDBModel, bool>> predicate)
         {
             var exists = await DbSet.SingleOrDefaultAsync(predicate);
             var errorMsg = $"{ModuleName}.Get({predicate}): record not found";
@@ -55,10 +55,9 @@ namespace SlickRepo
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task<TDto?> GetById(object id)
+        public virtual TDto? GetById(object id)
         {
             var exists = DbSet.AsEnumerable().SingleOrDefault(ById(id));
-
             var errorMsg = $"{ModuleName}.GetById({id}): record not found";
 
             if (exists == null)
@@ -73,7 +72,7 @@ namespace SlickRepo
         /// Gets the entire DbSet as List<>
         /// </summary>
         /// <returns></returns>
-        public async Task<List<TDto>> GetAll()
+        public virtual async Task<List<TDto>> GetAll()
         {
             var data = await DbSet.ToListAsync();
             return ConvertToDto(data);
@@ -84,7 +83,7 @@ namespace SlickRepo
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        public async Task<TDto?> Add(TDto dto)
+        public virtual async Task<TDto?> Add(TDto dto)
         {
 
             try
@@ -106,7 +105,7 @@ namespace SlickRepo
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        public async Task<TDto?> Update(TDto dto)
+        public virtual async Task<TDto?> Update(TDto dto)
         {
             try
             {
@@ -130,7 +129,7 @@ namespace SlickRepo
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        public async Task Delete(object id)
+        public virtual async Task Delete(object id)
         {
             var dbModel = DbSet.AsEnumerable().SingleOrDefault(ById(id));
             if (dbModel != null)
@@ -218,7 +217,7 @@ namespace SlickRepo
             if (serializedModel != null)
                 return JsonConvert.DeserializeObject<T>(serializedModel);
             else
-                return default(T);
+                throw new Exception($"{ModuleName}.ConvertLogic(): Error serializing input object.");
         }
 
         /// <summary>
@@ -249,7 +248,18 @@ namespace SlickRepo
         /// <returns></returns>
         private Func<TDBModel, bool> ById(object id)
         {
-            return x => typeof(TDBModel).GetProperty(DbIdPropertyName).GetValue(x).ToString() == id.ToString();
+            var prop = typeof(TDBModel).GetProperty(DbIdPropertyName);
+            if (prop == null)
+                throw new Exception($"{ModuleName}.ById({id}): Error retrieving property '{DbIdPropertyName}' on provided TDBModel.");
+
+            try
+            {
+                return x => prop.GetValue(x).ToString() == id.ToString();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{ModuleName}.ById({id}): Error constructing delegate: {ex.Message}");
+            }
         }
 
     }

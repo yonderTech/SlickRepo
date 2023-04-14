@@ -26,7 +26,7 @@ namespace WebTest.Controllers
         [Route("Users/{id}")]
         public async Task<IActionResult> Get(Guid id)
         {
-            return Ok(await Module.GetById(id));
+            return Ok(Module.GetById(id));
         }
 
 
