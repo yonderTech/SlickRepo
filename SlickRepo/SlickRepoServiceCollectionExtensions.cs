@@ -45,7 +45,6 @@ namespace SlickRepo
                 case ServiceLifetime.Scoped:
                     services.AddScoped(sp =>
                     {
-                        Debugger.Break();
                         var config = sp.GetService<SlickRepoConfig>();
                         var ctx = sp.GetService<DbContext>();
                         return new SlickRepo<TDbModel, TDtoModel>(ctx, config);
