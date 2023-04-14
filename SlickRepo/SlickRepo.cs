@@ -1,5 +1,6 @@
 ﻿using LinqKit;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System;
@@ -59,8 +60,8 @@ namespace SlickRepo
         /// <param name="id"></param>
         /// <returns></returns>
         public async Task<TDto?> GetById(object id)
-        {   
-            var exists = await DbSet.SingleOrDefaultAsync(DbModelIdLamba(id).DefaultExpression);
+        {
+            var exists = DbSet.AsEnumerable().SingleOrDefault(ById(id));
 
             var errorMsg = $"{ModuleName}.GetById({id}): record not found";
 
@@ -114,7 +115,7 @@ namespace SlickRepo
             try
             {
                 var dtoId = dto.GetType().GetProperty(DbIdPropertyName).GetValue(dto);
-                var target = await DbSet.SingleOrDefaultAsync(DbModelIdLamba(dtoId).DefaultExpression);
+                var target = DbSet.AsEnumerable().SingleOrDefault(ById(dtoId));
                 ApplyProperties(dto, target);
                 await Context.SaveChangesAsync();
                 return ConvertToDto(target);
@@ -135,7 +136,7 @@ namespace SlickRepo
         /// <returns></returns>
         public async Task Delete(object id)
         {
-            var dbModel = await DbSet.SingleOrDefaultAsync(DbModelIdLamba(id).DefaultExpression);
+            var dbModel = DbSet.AsEnumerable().SingleOrDefault(ById(id));
             if (dbModel != null)
             {
                 DbSet.Remove(dbModel);
@@ -244,18 +245,15 @@ namespace SlickRepo
             }
         }
 
+        
         /// <summary>
-        /// Create a lambda for look up of record by id
+        /// Return a Func filtering by id.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        private ExpressionStarter<TDBModel> DbModelIdLamba(object id)
+        private Func<TDBModel, bool> ById(object id)
         {
-            ParameterExpression x = Expression.Parameter(typeof(TDBModel), "x");
-            MemberExpression body = Expression.PropertyOrField(x, DbIdPropertyName);
-            ExpressionStarter<TDBModel> p = PredicateBuilder.New<TDBModel>(true);
-            p.Start(x => body == id);
-            return p;
+            return x => typeof(TDBModel).GetProperty(DbIdPropertyName).GetValue(x).ToString() == id.ToString();
         }
 
     }
