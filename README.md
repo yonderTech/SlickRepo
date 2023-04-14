@@ -29,7 +29,9 @@ public class UserModule : SlickRepo<Models.User, Dtos.User>
 }
 ```
 
-You would then use ``UserModule`` in a controller
+You can of course create custom methods in your class by using the ``Where(Expression<Func<TDBModel, bool>> predicate)`` and ``Get(Expression<Func<TDBModel, bool>> predicate)`` methods.
+
+You would then use ``UserModule`` in a controller like this
 
 ```
 [Route("api")]
@@ -59,3 +61,16 @@ That simple. Of course, you need to register ``UserModule`` as an injectable dep
 builder.Services.AddScoped<UserModule>();
 ```
 
+
+
+Here are SlickRepo's base methods.
+
+```
+Task<List<TDto>> Where(Expression<Func<TDBModel, bool>> predicate)
+Task<TDto?> Get(Expression<Func<TDBModel, bool>> predicate)
+Task<TDto?> GetById(object id)
+Task<List<TDto>> GetAll()
+Task<TDto?> Add(TDto dto)
+Task<TDto?> Update(TDto dto)
+Task Delete(object id)
+```
