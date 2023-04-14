@@ -14,56 +14,33 @@ namespace SlickRepo
 {
     public class SlickRepoConfig
     {
+        /// <summary>
+        /// The property used to look up by unique key in the DbSet
+        /// </summary>
         public string DbIdProperty { get; set; }
+        /// <summary>
+        /// The property on the DTO that allows to retrieve the unique key to look up for in DbSet
+        /// </summary>
         public string DtoIdProperty { get; set; }
     }
 
     public static class SlickRepoServiceCollectionExtensions
     {
-        public static IServiceCollection AddSlickRepo<TDbModel, TDtoModel>(this IServiceCollection services,
-            Action<SlickRepoConfig> setupAction, ServiceLifetime serviceLifetime) where TDbModel : class 
-            where TDtoModel : class
+        /// <summary>
+        /// Configure SlickRepo. Used to specified what are the unique keys for both models provided in generic constraints
+        /// </summary>
+        /// <param name="services"></param>
+        /// <param name="setupAction"></param>
+        /// <param name="serviceLifetime"></param>
+        /// <returns></returns>
+        public static IServiceCollection ConfigureSlickRepo(this IServiceCollection services,
+            Action<SlickRepoConfig> setupAction)
         {
 
             SlickRepoConfig config = new SlickRepoConfig();
             setupAction.Invoke(config);
             services.AddSingleton(config);
-            
-            switch (serviceLifetime)
-            {
-                case ServiceLifetime.Singleton:
-                    services.AddSingleton(CreateBaseRepo<TDbModel, TDtoModel>(services, config));
-                    break;
-                case ServiceLifetime.Transient:
-                    services.AddTransient(sp =>
-                    {
-                        var config = sp.GetService<SlickRepoConfig>();
-                        var ctx = sp.GetService<DbContext>();
-                        return new SlickRepo<TDbModel, TDtoModel>(ctx, config);
-                    });
-                    break;
-                case ServiceLifetime.Scoped:
-                    services.AddScoped(sp =>
-                    {
-                        var config = sp.GetService<SlickRepoConfig>();
-                        var ctx = sp.GetService<DbContext>();
-                        return new SlickRepo<TDbModel, TDtoModel>(ctx, config);
-                    });
-                    break;
-            }
-
             return services;
-        }
-
-
-        private static SlickRepo<TDbModel, TDtoModel> CreateBaseRepo<TDbModel, TDtoModel>(IServiceCollection services, SlickRepoConfig config) where TDbModel : class 
-            where TDtoModel : class
-        {
-            var serviceProvider = services.BuildServiceProvider();
-            DbContext ctx = serviceProvider.GetService<DbContext>();
-            SlickRepo<TDbModel, TDtoModel> baseRepo = new SlickRepo<TDbModel, TDtoModel>(ctx, config);
-            
-            return baseRepo;
         }
 
     }

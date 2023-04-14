@@ -11,9 +11,9 @@ namespace SlickRepo
     /// <summary>
     /// BaseModule, provides base operations for CRUD operations and converting back and forth
     /// </summary>
-    /// <typeparam name="TModel">DB model type</typeparam>
+    /// <typeparam name="TDBModel">DB model type</typeparam>
     /// <typeparam name="TDto">Dto model type</typeparam>
-    public class SlickRepo<TModel, TDto> where TModel : class where TDto : class
+    public class SlickRepo<TDBModel, TDto> where TDBModel : class where TDto : class
     {
         public SlickRepoConfig Config { get; set; }
         public DbContext Context { get; set; }
@@ -29,7 +29,7 @@ namespace SlickRepo
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        public async Task<List<TDto>> Where(Expression<Func<TModel, bool>> predicate)
+        public async Task<List<TDto>> Where(Expression<Func<TDBModel, bool>> predicate)
         {
             var data = await DbSet.Where(predicate).ToListAsync();
             return ConvertToDto(data);
@@ -40,7 +40,7 @@ namespace SlickRepo
         /// </summary>
         /// <param name="predicate"></param>
         /// <returns></returns>
-        public async Task<TDto?> Get(Expression<Func<TModel, bool>> predicate)
+        public async Task<TDto?> Get(Expression<Func<TDBModel, bool>> predicate)
         {
             var exists = await DbSet.SingleOrDefaultAsync(predicate);
             var errorMsg = $"{ModuleName}.Get({predicate}): record not found";
@@ -146,20 +146,20 @@ namespace SlickRepo
         /// <summary>
         /// Search through context for a DbSet<> with generic constraint matching TModel
         /// </summary>
-        private DbSet<TModel>? DbSet
+        private DbSet<TDBModel>? DbSet
         {
             get
             {
-                var dbSetProperty = Context.GetType().GetProperties().SingleOrDefault(x => x.PropertyType == typeof(DbSet<TModel>));
+                var dbSetProperty = Context.GetType().GetProperties().SingleOrDefault(x => x.PropertyType == typeof(DbSet<TDBModel>));
                 if (dbSetProperty == null)
-                    throw new Exception($"{ModuleName}.DbSet: No DbSet<{typeof(TModel).Name}> found in context!");
+                    throw new Exception($"{ModuleName}.DbSet: No DbSet<{typeof(TDBModel).Name}> found in context!");
 
                 var o = dbSetProperty.GetValue(Context);
 
                 if (o == null)
-                    throw new Exception($"{ModuleName}.DbSet: DbSet<{typeof(TModel).Name}> is null value.");
+                    throw new Exception($"{ModuleName}.DbSet: DbSet<{typeof(TDBModel).Name}> is null value.");
 
-                DbSet<TModel>? dbSet = o as DbSet<TModel>;
+                DbSet<TDBModel>? dbSet = o as DbSet<TDBModel>;
                 return dbSet;
 
             }
@@ -178,14 +178,14 @@ namespace SlickRepo
         /// </summary>
         /// <param name="item"></param>
         /// <returns></returns>
-        private TDto? ConvertToDto(TModel item)
+        private TDto? ConvertToDto(TDBModel item)
         {
             return ConvertLogic<TDto>(item);
         }
 
-        private TModel? ConvertToModel(TDto dto)
+        private TDBModel? ConvertToModel(TDto dto)
         {
-            return ConvertLogic<TModel>(dto);
+            return ConvertLogic<TDBModel>(dto);
         }
 
         /// <summary>
@@ -193,7 +193,7 @@ namespace SlickRepo
         /// </summary>
         /// <param name="items"></param>
         /// <returns></returns>
-        private List<TDto> ConvertToDto(List<TModel> items)
+        private List<TDto> ConvertToDto(List<TDBModel> items)
         {
             List<TDto> results = new List<TDto>();
             foreach (var item in items)
@@ -249,11 +249,11 @@ namespace SlickRepo
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        private ExpressionStarter<TModel> DbModelIdLamba(object id)
+        private ExpressionStarter<TDBModel> DbModelIdLamba(object id)
         {
-            ParameterExpression x = Expression.Parameter(typeof(TModel), "x");
+            ParameterExpression x = Expression.Parameter(typeof(TDBModel), "x");
             MemberExpression body = Expression.PropertyOrField(x, Config.DbIdProperty);
-            ExpressionStarter<TModel> p = PredicateBuilder.New<TModel>(true);
+            ExpressionStarter<TDBModel> p = PredicateBuilder.New<TDBModel>(true);
             p.Start(x => body == id);
             return p;
         }

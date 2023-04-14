@@ -16,12 +16,12 @@ builder.Services.AddControllers();
 
 builder.Services.AddDbContext<WebTestContext>(ServiceLifetime.Scoped);
 
-builder.Services.AddSlickRepo<Model.IBaseModelGuid<Model.BaseModelGuid>, Dto.IBaseDtoGuid<Dto.BaseDtoGuid>>(o =>
+builder.Services.ConfigureSlickRepo(o =>
 {
     o.DbIdProperty = "Id";
     o.DtoIdProperty = "Id";
 
-}, ServiceLifetime.Scoped);
+});
 
 builder.Services.AddScoped<UserModule>();
 
