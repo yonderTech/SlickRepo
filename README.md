@@ -64,4 +64,6 @@ Task<List<TDto>> GetAll()
 Task<TDto?> Add(TDto dto)
 Task<TDto?> Update(TDto dto)
 Task Delete(object id)
+TDto? ConvertToDto(TDBModel item)
+TDBModel? ConvertToModel(TDto dto)
 ```
