@@ -140,6 +140,21 @@ namespace SlickRepo
         }
 
         /// <summary>
+        /// Converts a record from TModel to TDto
+        /// </summary>
+        /// <param name="item"></param>
+        /// <returns></returns>
+        public TDto? ConvertToDto(TDBModel item)
+        {
+            return ConvertLogic<TDto>(item);
+        }
+
+        public TDBModel? ConvertToModel(TDto dto)
+        {
+            return ConvertLogic<TDBModel>(dto);
+        }
+
+        /// <summary>
         /// Search through context for a DbSet<> with generic constraint matching TModel
         /// </summary>
         private DbSet<TDBModel>? DbSet
@@ -167,21 +182,6 @@ namespace SlickRepo
             {
                 return this.GetType().Name;
             }
-        }
-
-        /// <summary>
-        /// Converts a record from TModel to TDto
-        /// </summary>
-        /// <param name="item"></param>
-        /// <returns></returns>
-        private TDto? ConvertToDto(TDBModel item)
-        {
-            return ConvertLogic<TDto>(item);
-        }
-
-        private TDBModel? ConvertToModel(TDto dto)
-        {
-            return ConvertLogic<TDBModel>(dto);
         }
 
         /// <summary>
@@ -240,7 +240,7 @@ namespace SlickRepo
             }
         }
 
-        
+
         /// <summary>
         /// Return a Func filtering by id.
         /// </summary>
@@ -252,14 +252,7 @@ namespace SlickRepo
             if (prop == null)
                 throw new Exception($"{ModuleName}.ById({id}): Error retrieving property '{DbIdPropertyName}' on provided TDBModel.");
 
-            try
-            {
-                return x => prop.GetValue(x).ToString() == id.ToString();
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"{ModuleName}.ById({id}): Error constructing delegate: {ex.Message}");
-            }
+            return x => prop.GetValue(x) != null && prop.GetValue(x)?.ToString() == id.ToString();
         }
 
     }
