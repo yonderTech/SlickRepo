@@ -13,7 +13,7 @@ In your web application, you can create a class that inherits SlickRepo as such.
 public class UserModule : SlickRepo<Models.User, Dtos.User>
 {
     //Id here is the name of the unique key for Models.User
-    public UserModule(YourDatabaseContext ctx, "Id") : base(ctx, config)
+    public UserModule(YourDatabaseContext ctx) : base(ctx, "Id")
     {
 
     }
