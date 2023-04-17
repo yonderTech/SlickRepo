@@ -211,7 +211,6 @@ namespace SlickRepo
             var serializedModel = JsonConvert.SerializeObject(model, Formatting.None, new JsonSerializerSettings
             {
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-
             });
 
             if (serializedModel != null)
