@@ -40,7 +40,7 @@ namespace SlickRepo
         public virtual async Task<TDto?> Get(Expression<Func<TDBModel, bool>> predicate)
         {
             var exists = await DbSet.SingleOrDefaultAsync(predicate);
-            var errorMsg = $"{ModuleName}.Get({predicate}): record not found";
+            var errorMsg = $"{ClassName}.Get({predicate}): record not found";
 
             if (exists == null)
             {
@@ -58,7 +58,7 @@ namespace SlickRepo
         public virtual TDto? GetById(object id)
         {
             var exists = DbSet.AsEnumerable().SingleOrDefault(ById(id));
-            var errorMsg = $"{ModuleName}.GetById({id}): record not found";
+            var errorMsg = $"{ClassName}.GetById({id}): record not found";
 
             if (exists == null)
             {
@@ -95,7 +95,7 @@ namespace SlickRepo
             }
             catch (Exception ex)
             {
-                var errorMsg = $"{ModuleName}.Add({JsonConvert.SerializeObject(dto)}): error adding record: {ex.Message}";
+                var errorMsg = $"{ClassName}.Add({JsonConvert.SerializeObject(dto)}): error adding record: {ex.Message}";
                 throw new Exception(errorMsg);
             }
         }
@@ -117,7 +117,7 @@ namespace SlickRepo
             }
             catch (Exception ex)
             {
-                var errorMsg = $"{ModuleName}.Update({JsonConvert.SerializeObject(dto)}): error updating record: {ex.Message}";
+                var errorMsg = $"{ClassName}.Update({JsonConvert.SerializeObject(dto)}): error updating record: {ex.Message}";
                 throw new Exception(errorMsg);
             }
 
@@ -163,12 +163,12 @@ namespace SlickRepo
             {
                 var dbSetProperty = Context.GetType().GetProperties().SingleOrDefault(x => x.PropertyType == typeof(DbSet<TDBModel>));
                 if (dbSetProperty == null)
-                    throw new Exception($"{ModuleName}.DbSet: No DbSet<{typeof(TDBModel).Name}> found in context!");
+                    throw new Exception($"{ClassName}.DbSet: No DbSet<{typeof(TDBModel).Name}> found in context!");
 
                 var o = dbSetProperty.GetValue(Context);
 
                 if (o == null)
-                    throw new Exception($"{ModuleName}.DbSet: DbSet<{typeof(TDBModel).Name}> is null value.");
+                    throw new Exception($"{ClassName}.DbSet: DbSet<{typeof(TDBModel).Name}> is null value.");
 
                 DbSet<TDBModel>? dbSet = o as DbSet<TDBModel>;
                 return dbSet;
@@ -176,7 +176,7 @@ namespace SlickRepo
             }
         }
 
-        private string ModuleName
+        private string ClassName
         {
             get
             {
@@ -217,7 +217,7 @@ namespace SlickRepo
             if (serializedModel != null)
                 return JsonConvert.DeserializeObject<T>(serializedModel);
             else
-                throw new Exception($"{ModuleName}.ConvertLogic(): Error serializing input object.");
+                throw new Exception($"{ClassName}.ConvertLogic(): Error serializing input object.");
         }
 
         /// <summary>
@@ -250,9 +250,9 @@ namespace SlickRepo
         {
             var prop = typeof(TDBModel).GetProperty(DbIdPropertyName);
             if (prop == null)
-                throw new Exception($"{ModuleName}.ById({id}): Error retrieving property '{DbIdPropertyName}' on provided TDBModel.");
+                throw new Exception($"{ClassName}.ById({id}): Error retrieving property info '{DbIdPropertyName}' on provided TDBModel.");
 
-            return x => prop.GetValue(x) != null && prop.GetValue(x)?.ToString() == id.ToString();
+            return x => x != null && prop.GetValue(x) != null && prop.GetValue(x)?.ToString() == id.ToString();
         }
 
     }
