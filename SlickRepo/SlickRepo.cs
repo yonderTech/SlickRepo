@@ -14,11 +14,23 @@ namespace SlickRepo
     {
         public DbContext Context { get; set; }
         private string DbIdPropertyName { get; set; }
+        private DbSet<TDBModel>? DbSet { get; set; }
 
         public SlickRepo(DbContext context, string dbIdPropertyName)
         {
             Context = context;
             DbIdPropertyName = dbIdPropertyName;
+
+            var dbSetProperty = Context.GetType().GetProperties().SingleOrDefault(x => x.PropertyType == typeof(DbSet<TDBModel>));
+            if (dbSetProperty == null)
+                throw new Exception($"{ClassName}.DbSet: No DbSet<{typeof(TDBModel).Name}> found in context!");
+
+            var o = dbSetProperty.GetValue(Context);
+
+            if (o == null)
+                throw new Exception($"{ClassName}.DbSet: DbSet<{typeof(TDBModel).Name}> is null value.");
+
+           DbSet = o as DbSet<TDBModel>;
         }
 
         /// <summary>
@@ -152,28 +164,6 @@ namespace SlickRepo
         public TDBModel? ConvertToModel(TDto dto)
         {
             return ConvertLogic<TDBModel>(dto);
-        }
-
-        /// <summary>
-        /// Search through context for a DbSet<> with generic constraint matching TModel
-        /// </summary>
-        private DbSet<TDBModel>? DbSet
-        {
-            get
-            {
-                var dbSetProperty = Context.GetType().GetProperties().SingleOrDefault(x => x.PropertyType == typeof(DbSet<TDBModel>));
-                if (dbSetProperty == null)
-                    throw new Exception($"{ClassName}.DbSet: No DbSet<{typeof(TDBModel).Name}> found in context!");
-
-                var o = dbSetProperty.GetValue(Context);
-
-                if (o == null)
-                    throw new Exception($"{ClassName}.DbSet: DbSet<{typeof(TDBModel).Name}> is null value.");
-
-                DbSet<TDBModel>? dbSet = o as DbSet<TDBModel>;
-                return dbSet;
-
-            }
         }
 
         private string ClassName
