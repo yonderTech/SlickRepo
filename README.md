@@ -12,8 +12,8 @@ In your web application, you can create a class that inherits SlickRepo as such.
 ```
 public class UserModule : SlickRepo<Models.User, Dtos.User>
 {
-    //Id here is the name of the unique key for Models.User
-    public UserModule(YourDatabaseContext ctx) : base(ctx, "Id")
+    //The 2nd parameter provided to SlickRepo ctor here is a lambda expression specifying the unique key property
+    public UserModule(YourDatabaseContext ctx) : base(ctx, user => user.Id)
     {
 
     }

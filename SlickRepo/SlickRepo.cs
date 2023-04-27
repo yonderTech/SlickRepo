@@ -16,11 +16,11 @@ namespace SlickRepo
         private string DbIdPropertyName { get; set; }
         private DbSet<TDBModel>? DbSet { get; set; }
 
-        public SlickRepo(DbContext context, string dbIdPropertyName)
+        public SlickRepo(DbContext context, Expression<Func<TDBModel, object>> idPropertyExpression)
         {
             Context = context;
-            DbIdPropertyName = dbIdPropertyName;
-
+            DbIdPropertyName = PropertyName(idPropertyExpression);
+        
             var dbSetProperty = Context.GetType().GetProperties().SingleOrDefault(x => x.PropertyType == typeof(DbSet<TDBModel>));
             if (dbSetProperty == null)
                 throw new Exception($"{ClassName}.DbSet: No DbSet<{typeof(TDBModel).Name}> found in context!");
@@ -242,6 +242,37 @@ namespace SlickRepo
                 throw new Exception($"{ClassName}.ById({id}): Error retrieving property info '{DbIdPropertyName}' on provided TDBModel.");
 
             return x => x != null && prop.GetValue(x) != null && prop.GetValue(x)?.ToString() == id.ToString();
+        }
+
+
+        /// <summary>
+        /// Return the string value for a property provided through a lambda expression
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="propertyExpression"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
+        private string PropertyName<T>(Expression<Func<T, object>> propertyExpression)
+        {
+            MemberExpression mbody = propertyExpression.Body as MemberExpression;
+
+            if (mbody == null)
+            {
+                //This will handle Nullable<T> properties.
+                UnaryExpression ubody = propertyExpression.Body as UnaryExpression;
+
+                if (ubody != null)
+                {
+                    mbody = ubody.Operand as MemberExpression;
+                }
+
+                if (mbody == null)
+                {
+                    throw new ArgumentException("Expression is not a MemberExpression", "propertyExpression");
+                }
+            }
+
+            return mbody.Member.Name;
         }
 
     }

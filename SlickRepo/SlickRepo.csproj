@@ -17,7 +17,7 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageProjectUrl>https://github.com/yonderTech/SlickRepo</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/yonderTech/SlickRepo</RepositoryUrl>
-		<Version>1.0.5</Version>
+		<Version>1.0.6</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
