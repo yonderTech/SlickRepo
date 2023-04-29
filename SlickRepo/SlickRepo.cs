@@ -14,21 +14,43 @@ namespace SlickRepo
     {
         public DbContext Context { get; set; }
         private string DbIdPropertyName { get; set; }
-        private DbSet<TDBModel>? DbSet { get; set; }
+        private string DtoIdPropertyName { get; set; }
+        private JsonSerializerSettings JsonSerializerSettings { get; set; } = new JsonSerializerSettings
+        {
+            ReferenceLoopHandling = ReferenceLoopHandling.Ignore
+        };
 
-        public SlickRepo(DbContext context, Expression<Func<TDBModel, object>> idPropertyExpression)
+    private DbSet<TDBModel>? DbSet { get; set; }
+
+        /// <summary>
+        /// SlickRepo.
+        /// </summary>
+        /// <param name="context">Your DbContext</param>
+        /// <param name="dbIdPropertyExpression">Expression to specify TDBModel's unique key</param>
+        /// <param name="dtoIdPropertyExpression">Expression to specify TDto's unique key. Optional, will assume same as TDBModel if nothing provided</param>
+        /// <exception cref="Exception"></exception>
+        public SlickRepo(DbContext context, 
+            Expression<Func<TDBModel, object>> dbIdPropertyExpression,
+            Expression<Func<TDto, object>> dtoIdPropertyExpression = null)
         {
             Context = context;
-            DbIdPropertyName = PropertyName(idPropertyExpression);
-        
+            
+            DbIdPropertyName = PropertyName(dbIdPropertyExpression);
+
+            if (dtoIdPropertyExpression == null)
+                DtoIdPropertyName = DbIdPropertyName;
+            else
+                DtoIdPropertyName = PropertyName(dtoIdPropertyExpression);
+
             var dbSetProperty = Context.GetType().GetProperties().SingleOrDefault(x => x.PropertyType == typeof(DbSet<TDBModel>));
+
             if (dbSetProperty == null)
-                throw new Exception($"{ClassName}.DbSet: No DbSet<{typeof(TDBModel).Name}> found in context!");
+                throw new Exception($"SlickRepo.ctor: No DbSet<{typeof(TDBModel).Name}> found in context!");
 
             var o = dbSetProperty.GetValue(Context);
 
             if (o == null)
-                throw new Exception($"{ClassName}.DbSet: DbSet<{typeof(TDBModel).Name}> is null value.");
+                throw new Exception($"SlickRepo.ctor: DbSet<{typeof(TDBModel).Name}> is null value.");
 
            DbSet = o as DbSet<TDBModel>;
         }
@@ -121,7 +143,7 @@ namespace SlickRepo
         {
             try
             {
-                var dtoId = dto.GetType().GetProperty(DbIdPropertyName).GetValue(dto);
+                var dtoId = dto.GetType().GetProperty(DtoIdPropertyName).GetValue(dto);
                 var target = DbSet.AsEnumerable().SingleOrDefault(ById(dtoId));
                 ApplyProperties(dto, target);
                 await Context.SaveChangesAsync();
@@ -198,12 +220,9 @@ namespace SlickRepo
         /// <returns></returns>
         private T? ConvertLogic<T>(object model)
         {
-            var serializedModel = JsonConvert.SerializeObject(model, Formatting.None, new JsonSerializerSettings
-            {
-                ReferenceLoopHandling = ReferenceLoopHandling.Ignore
-            });
+            var serializedModel = JsonConvert.SerializeObject(model, Formatting.None, JsonSerializerSettings);
 
-            if (serializedModel != null)
+            if (!string.IsNullOrEmpty(serializedModel))
                 return JsonConvert.DeserializeObject<T>(serializedModel);
             else
                 throw new Exception($"{ClassName}.ConvertLogic(): Error serializing input object.");
