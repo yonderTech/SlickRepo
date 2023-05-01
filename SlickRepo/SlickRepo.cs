@@ -19,8 +19,7 @@ namespace SlickRepo
         {
             ReferenceLoopHandling = ReferenceLoopHandling.Ignore
         };
-
-    private DbSet<TDBModel>? DbSet { get; set; }
+        private DbSet<TDBModel>? DbSet { get; set; }
 
         /// <summary>
         /// SlickRepo.
@@ -29,12 +28,12 @@ namespace SlickRepo
         /// <param name="dbIdPropertyExpression">Expression to specify TDBModel's unique key</param>
         /// <param name="dtoIdPropertyExpression">Expression to specify TDto's unique key. Optional, will assume same as TDBModel if nothing provided</param>
         /// <exception cref="Exception"></exception>
-        public SlickRepo(DbContext context, 
+        public SlickRepo(DbContext context,
             Expression<Func<TDBModel, object>> dbIdPropertyExpression,
-            Expression<Func<TDto, object>> dtoIdPropertyExpression = null)
+            Expression<Func<TDto, object>>? dtoIdPropertyExpression = null)
         {
             Context = context;
-            
+
             DbIdPropertyName = PropertyName(dbIdPropertyExpression);
 
             if (dtoIdPropertyExpression == null)
@@ -52,7 +51,7 @@ namespace SlickRepo
             if (o == null)
                 throw new Exception($"SlickRepo.ctor: DbSet<{typeof(TDBModel).Name}> is null value.");
 
-           DbSet = o as DbSet<TDBModel>;
+            DbSet = o as DbSet<TDBModel>;
         }
 
         /// <summary>
