@@ -144,6 +144,7 @@ namespace SlickRepo
             {
                 var dtoId = dto.GetType().GetProperty(DtoIdPropertyName).GetValue(dto);
                 var target = DbSet.AsEnumerable().SingleOrDefault(ById(dtoId));
+                var entity = Context.Entry(target).State = EntityState.Modified;
                 ApplyProperties(dto, target);
                 await Context.SaveChangesAsync();
                 return ConvertToDto(target);
